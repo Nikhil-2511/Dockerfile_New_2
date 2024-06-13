@@ -1,0 +1,32 @@
+# Select OS
+FROM ubuntu:22.04
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y systemd nginx nodejs npm && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create a volume
+VOLUME /dockertest4
+
+# Install PM2 globally
+RUN npm install -g pm2
+
+# Copy the application directory
+COPY donedeal-web/  /dockertest4/donedeal-web
+
+# Set the working directory to the location of package.json
+WORKDIR /dockertest4/donedeal-web/
+
+# Install application dependencies
+RUN npm install
+
+# Expose the port your application runs on
+EXPOSE 3000
+
+# Set the entrypoint
+ENTRYPOINT ["/bin/bash"]
+
+# Start systemd, nginx, and the application using PM2
+CMD ["-c", "service nginx start && pm2-runtime start npm -- start"]
